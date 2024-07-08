@@ -68,7 +68,9 @@ SELECT * FROM sales
 -- ### Section 1: 1 mark each
 
 -- 1. Write a query to display the artist names in uppercase.
-SELECT UPPER(Name) AS Artist_Name FROM artists
+SELECT UPPER(Name) AS Artist_Name 
+FROM artists
+-- 1,Correct
 
 -- 2. Write a query to find the total amount of sales for the artwork 'Mona Lisa'.
 SELECT SUM(s.total_amount) AS TotalSales
@@ -76,10 +78,12 @@ FROM sales s
 JOIN artworks a
 ON s.artwork_id = a.artwork_id
 WHERE a.title = 'Mona Lisa'
+-- 1,Correct
 
 -- 3. Write a query to calculate the price of 'Starry Night' plus 10% tax.
 SELECT (Price * 1.1) AS PriceWithTax FROM artworks
 WHERE title = 'Starry Night'
+-- 1,Correct
 
 -- 4. Write a query to extract the year from the sale date of 'Guernica'.
 SELECT YEAR(s.sale_date) AS Year
@@ -87,6 +91,7 @@ FROM sales s
 JOIN artworks a
 ON a.artwork_id = s.artwork_id
 WHERE a.title = 'Guernica'
+-- 1,Correct
 
 -- ### Section 2: 2 marks each
 
@@ -97,9 +102,10 @@ SELECT  a.Name,
 FROM artists a
 JOIN artworks b
 ON a.artist_id = b.artist_id
-Group By a.name
+Group By a.name 
 HAVING COUNT(b.genre) > 1
 Order By a.name
+-- 1.3, didn't mention the distinct in the count
 
 
 -- 6. Write a query to find the artworks that have the highest sale total for each genre.
@@ -111,11 +117,13 @@ SELECT  a.Title,
 FROM artworks a
 JOIN sales s 
 ON s.artwork_id = a.artwork_id
+-- 1.8, we are getting the rank 2.
 
 -- 7. Write a query to find the average price of artworks for each artist.
 SELECT  artist_id,
         AVG(a.price) OVER(Partition By artist_id ORDER BY Price DESC) AS AvgPrice 
 FROM artworks a
+-- 1.5, didn't use joins and group by & Name 
 
 -- 8. Write a query to find the top 2 highest-priced artworks and the total quantity sold for each.
 
@@ -135,6 +143,7 @@ GROUP BY a.artwork_id, ar.name
 )
 SELECT * FROM TopArts_CTE
 WHERE RANK < 3
+-- 2, Correct
 
 -- 9. Write a query to find the artists who have sold more artworks than the average number of artworks sold per artist.
 WITH AvgQuantitySold_CTE
@@ -152,7 +161,7 @@ GROUP BY a.artist_id,ar.name,s.quantity
 SELECT * FROM AvgQuantitySold_CTE
 WHERE quantity > AVG
 ORDER BY quantity DESC
-
+-- 2,Correct
 
 -- 10. Write a query to display artists whose birth year is earlier than the average birth year of artists from their country.
 GO
@@ -160,6 +169,7 @@ SELECT  i.Country,
         AVG(i.birth_year) OVER (Partition BY i.Country ORDER BY i.artist_id)AS AvgAge 
 FROM artists i
 GROUP BY i.country,i.artist_id
+-- 0.5, Not executed logic is correct
 
 GO
 
@@ -170,6 +180,7 @@ INTERSECT(
 SELECT * FROM artworks
 WHERE Genre = 'Surrealism'
 )
+-- 2,Correct
 
 -- 12. Write a query to find the artworks that have been sold in both January and February 2024.
 SELECT artwork_id
@@ -180,6 +191,8 @@ SELECT artwork_id
 FROM sales
 WHERE YEAR(sale_date) = 2024 AND Month(sale_date) = 'February'
 )
+-- 2,Correct
+
 -- 13. Write a query to display the artists whose average artwork price is higher than every artwork price in the 'Renaissance' genre.
 
 WITH AvgArtPrice_CTE
@@ -194,6 +207,7 @@ ON ar.artist_id = a.artist_id
 SELECT * FROM AvgArtPrice_CTE 
 WHERE AvgPrice > ALL(SELECT price from artworks
                         WHERE genre = 'Renaissance')
+-- 2,Correct
 
 -- 14. Write a query to rank artists by their total sales amount and display the top 3 artists.
 WITH TopArtists_CTE
@@ -211,8 +225,11 @@ GROUP BY ar.artist_id, ar.name
 )
 SELECT * FROM TopArtists_CTE
 WHERE RANK < 4
+-- 1.8,Correct getting 2 ranks for 3
+
 -- 15. Write a query to create a non-clustered index on the `sales` table to improve query performance for queries filtering by `artwork_id`.
 CREATE NONCLUSTERED INDEX NCI_ArtworkId ON sales(artwork_id)
+-- 2,Correct
 
 EXEC sp_helpindex sales
 -- ### Section 3: 3 Marks Questions
@@ -230,7 +247,7 @@ ON ar.artist_id = a.artist_id
 SELECT * FROM AvgPriceOfArtworks_CTE 
 WHERE AvgPrice > (SELECT AVG(price) FROM artworks)
 ORDER BY AvgPrice DESC
-
+-- 3,Correct
 
 -- 17.  Write a query to create a view that shows artists who have created artworks in multiple genres.
 
@@ -244,6 +261,7 @@ JOIN artworks b
 ON a.artist_id = b.artist_id
 Group By a.name
 HAVING COUNT(b.genre) > 1
+-- 2.7, didn't mention the distinct in count
 GO
 
 SELECT * FROM vWArtistsWithMultipleGenre
@@ -270,6 +288,7 @@ FROM AvgPriceOfArtworks_CTE a
 JOIN artworks b
 ON a.artist_id = b.artist_id
 WHERE b.price > a.AvgPrice
+-- 1,Output is wrong but some logic is correct
 
 -- ### Section 4: 4 Marks Questions
 
@@ -282,6 +301,7 @@ JOIN artworks ArtWork
 ON Artist.artist_id = ArtWork.artist_id
 GROUP BY Artist.name,ArtWork.title
 FOR JSON AUTO
+-- 2, some code is correct
 
 -- 20.  Write a query to export the artists and their artworks into XML format.
 SELECT  a.name [Name],
@@ -291,6 +311,7 @@ JOIN artworks b
 ON a.artist_id = b.artist_id
 GROUP BY a.name,b.title
 FOR XML PATH('Art'), ROOT('Arts')
+-- 2, some code is correct
 
 -- #### Section 5: 5 Marks Questions
 
@@ -304,13 +325,13 @@ BEGIN
     BEGIN TRY
         IF (SELECT quantity FROM inserted) < 0
             THROW 20001, 'Quantity cant be Negative',1;
-        UPDATE 
+        
     END TRY
     CREATE CATCH
     PRINT(Error_Message())
     END CATCH
-
 END
+-- 1,Some part of code is correct, didn't mention transaction, commit
 
 -- 22. Create a multi-statement table-valued function (MTVF) to return the total quantity sold for each genre and use it in a query to display the results.
 
@@ -333,6 +354,7 @@ BEGIN
     RETURN;
 END 
 GO
+-- 5,Correct
 
 SELECT Genre,TotalQuantity FROM TotalQuantitySold('cubism')
 GO
@@ -351,6 +373,7 @@ BEGIN
     )
 END
 GO
+-- 5,Correct
 
 SELECT dbo.CalcAvgSalesAmount('Cubism') AS AvgSalesAmount
 
@@ -364,9 +387,17 @@ AFTER UPDATE
 AS
 BEGIN
     INSERT INTO artworks_log
-    SELECT artwork_id,title,'' FROM inserted
+    SELECT artwork_id,title,'Row Changed' FROM inserted
 END
 GO
+
+
+Update artworks
+SET genre = 'Random'
+WHERE artist_id = 6
+
+SELECT * FROM artworks_log
+--4, some part of code is correct, missed some columns
 
 -- 25. Write a query to create an NTILE distribution of artists based on their total sales, divided into 4 tiles.
 
@@ -379,6 +410,7 @@ ON art.artist_id = a.artist_id
 JOIN sales s
 ON s.artwork_id = art.artwork_id
 GROUP BY a.name
+-- 5, Correct
 
 
 -- ### Normalization (5 Marks)
@@ -427,3 +459,5 @@ CREATE TABLE Injunction(
     CONSTRAINT FK_custid FOREIGN KEY(cust_id) REFERENCES customer(cust_id),
     CONSTRAINT FK_ordid2 FOREIGN KEY(ord_id) REFERENCES orders(ord_id)
 )
+
+-- 4, missed not null,unique constraints
